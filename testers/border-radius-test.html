@@ -1,0 +1,72 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="mul" lang="mul" dir="ltr">
+<head>
+    <title>Border radius test</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <style type="text/css">
+    body { font-family: sans-serif; font-size: 9pt; }
+    div { background: lightgray none; margin: 12pt; height: 10px; width: 400px; padding: 30px;}
+    
+    #border-radius_30px { border-radius: 30px }
+    #border-radius_30px_30px_0px_0px { border-radius: 30px 30px 0px 0px }
+    #border-radius_30px_30px_0px_0px_10px_10px_0px_0px { border-radius: 30px 30px 0px 0px / 10px 10px 0x 0px }
+    #border-top-left-radius_30px { border-top-left-radius: 30px }
+    #border-top-left-radius_30px_10px { border-top-left-radius: 30px  10px }
+    
+    #-moz-border-radius_30px { -moz-border-radius: 30px }
+    #-moz-border-radius_30px_30px_0px_0px { -moz-border-radius: 30px 30px 0px 0px }
+    #-moz-border-radius_30px_30px_0px_0px_10px_10px_0px_0px { -moz-border-radius: 30px 30px 0px 0px / 10px 10px 0x 0px }
+    #-moz-border-top-left-radius_30px { -moz-border-top-left-radius: 30px }
+    #-moz-border-top-left-radius_30px_10px { -moz-border-top-left-radius: 30px / 10px }
+    #-moz-border-radius-topleft_30px { -moz-border-radius-topleft: 30px }
+    #-moz-border-radius-topleft_30px_10px { -moz-border-radius-topleft: 30px 10px }
+
+    #-webkit-border-radius_30px { -webkit-border-radius: 30px }
+    #-webkit-border-radius_30px_30px_0px_0px { -webkit-border-radius: 30px 30px 0px 0px }
+    #-webkit-border-radius_30px_30px_0px_0px_10px_10px_0px_0px { -webkit-border-radius: 30px 30px 0px 0px / 10px 10px 0x 0px }
+    #-webkit-border-top-left-radius_30px { -webkit-border-top-left-radius: 30px }
+    #-webkit-border-top-left-radius_30px_10px { -webkit-border-top-left-radius: 30px 10px }
+    
+    #-ms-border-radius_30px { -ms-border-radius: 30px }
+    #-ms-border-radius_30px_30px_0px_0px { -ms-border-radius: 30px 30px 0px 0px }
+    #-ms-border-radius_30px_30px_0px_0px_10px_10px_0px_0px { -ms-border-radius: 30px 30px 0px 0px / 10px 10px 0x 0px }
+    #-ms-border-top-left-radius_30px { -ms-border-top-left-radius: 30px }
+    #-ms-border-top-left-radius_30px_10px { -ms-border-top-left-radius: 30px 10px }
+        
+    </style>
+</head>
+<body>
+    <h1>CSS border radius test page</h1>
+    
+    <h2>Standards</h2>
+    <div id="border-radius_30px">border-radius: 30px</div>
+    <div id="border-radius_30px_30px_0px_0px">border-radius: 30px 30px 0px 0px</div>
+    <div id="border-radius_30px_30px_0px_0px_10px_10px_0px_0px">border-radius: 30px 30px 0px 0px / 10px 10px 0x 0px</div>
+    <div id="border-top-left-radius_30px">border-top-left-radius: 30px</div>
+    <div id="border-top-left-radius_30px_10px">border-top-left-radius: 30px 10px</div>
+    
+    <h2>Mozilla</h2>
+    <div id="-moz-border-radius_30px">-moz-border-radius: 30px</div>
+    <div id="-moz-border-radius_30px_30px_0px_0px">-moz-border-radius: 30px 30px 0px 0px</div>
+    <div id="-moz-border-radius_30px_30px_0px_0px_10px_10px_0px_0px">-moz-border-radius: 30px 30px 0px 0px / 10px 10px 0x 0px</div>
+    <div id="-moz-border-top-left-radius_30px">-moz-border-top-left-radius: 30px</div>
+    <div id="-moz-border-top-left-radius_30px_10px">-moz-border-top-left-radius: 30px 10px</div>
+    <div id="-moz-border-radius-topleft_30px">-moz-border-radius-topleft: 30px</div>
+    <div id="-moz-border-radius-topleft_30px_10px">-moz-border-radius-topleft: 30px 10px</div>
+
+    <h2>Webkit</h2>
+    <div id="-webkit-border-radius_30px">-webkit-border-radius: 30px</div>
+    <div id="-webkit-border-radius_30px_30px_0px_0px">-webkit-border-radius: 30px 30px 0px 0px</div>
+    <div id="-webkit-border-radius_30px_30px_0px_0px_10px_10px_0px_0px">-webkit-border-radius: 30px 30px 0px 0px / 10px 10px 0x 0px</div>
+    <div id="-webkit-border-top-left-radius_30px">-webkit-border-top-left-radius: 30px</div>
+    <div id="-webkit-border-top-left-radius_30px_10px">-webkit-border-top-left-radius: 30px 10px</div>
+    
+    <h2>Microsoft</h2>
+    <div id="-ms-border-radius_30px">-ms-border-radius: 30px</div>
+    <div id="-ms-border-radius_30px_30px_0px_0px">-ms-border-radius: 30px 30px 0px 0px</div>
+    <div id="-ms-border-radius_30px_30px_0px_0px_10px_10px_0px_0px">-ms-border-radius: 30px 30px 0px 0px / 10px 10px 0x 0px</div>
+    <div id="-ms-border-top-left-radius_30px">-ms-border-top-left-radius: 30px</div>
+    <div id="-ms-border-top-left-radius_30px_10px">-ms-border-top-left-radius: 30px 10px</div>
+    
+</body>
+</html>
