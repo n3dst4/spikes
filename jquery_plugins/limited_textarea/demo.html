@@ -1,0 +1,52 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="mul" lang="mul" dir="ltr">
+<head>
+    <title></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js">
+    </script> 
+    <style type="text/css">
+        /* Boggo page CSS - you can ignore this. */
+        body { font-family: "deja-vu sans", "verdana", sans-serif;
+               background: #fff; margin: 1em; font-size: small;}
+        h1 {background: #fff; padding: 0.5em 1em 0.2em 1em; margin: -1em -1em 0em -1em;
+            border-bottom: 2px solid royalblue; font-size: large; 
+            font-weight: normal; color: royalblue;}
+        p {padding: 1em 0em; margin: 0em 0em;}
+        textarea {font-family: "dejavu sans mono", "monaco", "lucida console", monospace;}
+    
+        /* This class is used by the custom callback. */
+        .validation-failure {background: lightgoldenrodyellow;}
+    
+        /* Classes used by the plugin (you can change the names.) */
+        .limited_textarea_count {font-family: "Georgia", serif; font-size: 2em;}
+        .limited_textarea_low {color: sienna;}
+        .limited_textarea_zero {color: orange;}
+        .limited_textarea_negative {color: red;}
+    </style>
+    <script type="text/javascript" src="jquery.limited_textarea.js"></script>
+    <script type="text/javascript">      
+        $(function(){
+            $("#demo").limited_textarea(30, {
+                on_overflow: function() {
+                    $("#demo").addClass("validation-failure");
+                },
+                on_underflow: function() {
+                    $("#demo").removeClass("validation-failure");
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>Limited textarea demo</h1>
+    <p>The following textarea is soft-limited to 50 characters. The 
+    colour-change on the count is done by the plugin switching classes. The
+    Yellowness of the textarea when you go negative is a custom callback.</p>
+    <p>View source for full details :)</p>
+    <form>
+        <p><textarea rows="8" cols="40" id="demo"></textarea></p>
+        <p><input type="submit" value="Submit" /></p>
+    </form>
+</body>
+</html>
