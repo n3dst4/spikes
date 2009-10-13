@@ -1,21 +1,24 @@
 /*
  * jquery.limited_textarea.js
+ * ==========================
+ * http://bitbucket.org/n3dst4/spikes/
  *
  * JQuery plugin for giving a textarea a Twitter-esque soft character limit.
  *
- * Usage:
+ * Usage
+ * -----
  * limited_textarea(limit, [options])
  *
- * Example:
+ * Example
+ * -------
  * // 200 character limit:
  * $("#mytextarea").limited_textarea(200)
  *
  * // 300 character limit, warns at 50:
  * $("#mytextarea").limited_textarea(200, {threshold: 50})
  *
- * The remaining character count is shown in a div below the textarea itself.
- *
- * Options:
+ * Options
+ * -------
  * threshold: (default: 10) Number of characters remaining at which to apply
  *     counter_class_low,
  * counter_class: class name to apply to the counter div
@@ -34,8 +37,15 @@
  * on_underflow: Function or array of functions to be called when the characters
  *      remnaining count ceases to be negative ([])
  *
- * You can style the counter by created CSS classes for
- * limited_textarea_(count|low|zero|negative).
+ * Notes
+ * -----
+ * The remaining character count is shown in a div below the textarea itself.
+ *
+ * You can style the counter by creating CSS classes called:
+ * limited_textarea_count     // always applied to counter
+ * limited_textarea_low       // applied when chars remaining < threshold
+ * limited_textarea_zero      // applied when chars remaining == 0
+ * limited_textarea_negative  // applied when chars remaining < 0
  *
  * If you want additional actions to happen when the textarea is overfilled,
  * (such as making the texarea go yellow or triggering your own validation
@@ -43,6 +53,32 @@
  * you need to do something when the textarea comes back within limits. Callback
  * functions are called without arguments.
  *
+ * Copyright and licence
+ * ---------------------
+ * Copyright (c) 2009, Neil de Carteret
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the <organization> nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY <copyright holder> ''AS IS'' AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL <copyright holder> BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /*global jQuery */
