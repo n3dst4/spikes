@@ -170,6 +170,7 @@
             update();
             el.keyup(update);
         });
+        return this;
     };
 
     $.fn.limited_textarea.defaults = {

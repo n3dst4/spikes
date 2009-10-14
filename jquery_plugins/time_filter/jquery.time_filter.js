@@ -61,6 +61,7 @@ jQuery.fn.extend({
             return jQuery(this).val((hour<10?"0":"") + hour + ":" +
                                     (minute<10?"0":"") + minute);
         });
+        return this;
     },
     // quickly reset a meaningless field to midnight
     reset_time: function() {
