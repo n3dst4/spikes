@@ -106,11 +106,13 @@
                 // add built-in callbacks
                 opts.on_overflow.push(function() {
                     el.parents("form").bind("submit", disable);
-                    el.parents("form").find("input:submit").attr("disabled", "disabled");
+                    el.parents("form").find("input:submit")
+                                      .attr("disabled", "disabled");
                 });
                 opts.on_underflow.push(function() {
                     el.parents("form").unbind("submit", disable);
-                    el.parents("form").find("input:submit").attr("disabled", "");
+                    el.parents("form").find("input:submit")
+                                      .attr("disabled", "");
                 });
             }
 
