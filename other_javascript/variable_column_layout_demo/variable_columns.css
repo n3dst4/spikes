@@ -1,0 +1,167 @@
+@CHARSET "ISO-8859-1";
+
+body
+	{
+	font-family: "arial", sans-serif;
+	font-size: 10pt;
+	background: white;
+	margin: 0;
+	padding: 0;
+	}
+
+h1
+	{
+	color: #5CAEBD;
+	font-weight: normal;
+	margin: 6pt;
+	}
+
+p
+	{
+	margin: 6pt;
+	text-align: justify;
+	}
+
+div.column_holder
+	{
+	margin: 0pt 6pt 0pt 6pt;
+	padding: 6pt;
+	border-top: 1px solid #5CAEBD;
+	}
+
+div.column_inner
+	{
+	height: 100%;
+	margin: 0 6pt 0 0;
+}
+
+div.column_outer
+	{
+	float: left;
+	}
+
+div.helper
+	{
+	border: 2px dashed #aaa;
+	width: auto;
+	}
+
+div.node
+	{
+	background: white;
+	border: 1px solid #BDD4D8;
+	margin: 6pt 0 0 0;
+	}
+
+div.node h2, div.node div.header
+	{
+	font-size: 110%;
+	font-weight: bold;
+	background: #BDD4D8;
+	margin: 0;
+	padding: 3pt;
+	cursor: move;
+	position: relative;
+	}
+
+div#footer
+	{
+	background: #5CAEBD;
+	color: white;
+	text-align: center;
+	margin: 16pt 0pt 0pt 0pt;
+	}
+
+div.column_clear
+	{
+	clear: both;
+	qbackground: black none;
+	}
+
+div#layout_chooser_master
+	{
+	display: none;
+	}
+
+table.layout_chooser
+	{
+	margin-left: auto;
+	margin-right: auto;
+	}
+
+table.layout_chooser th
+	{
+	padding: 6pt;
+	vertical-align: middle;
+	}
+table.layout_chooser td
+	{
+	padding: 6pt;
+	vertical-align: middle;
+	}
+table.layout_chooser td img
+	{
+	vertical-align: middle;
+	}
+
+img.close_button
+	{
+	position: absolute;
+	top: 16px;
+	right: 16px;
+	}
+
+/*
+ * IMPROMPTU
+ */
+div.jqifade
+	{
+    background-color: #000;
+	}
+div.jqi
+	{
+    background-color: #8DC3CC   ;
+    padding: 10px;
+    width: 500px;
+    text-align: center;
+	}
+div.jqi .jqicontainer
+	{
+    background-color: white   ;
+    padding: 5px;
+    color: black;
+	}
+div.jqi .jqimessage
+	{
+    background-color: white   ;
+    padding: 10px;
+	}
+div.jqi .jqibuttons
+	{
+    text-align: center;
+    padding: 5px 0 0 0;
+
+	}
+div.jqi button
+	{
+    padding: 3px 10px 3px 10px;
+    margin: 0 10px;
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
