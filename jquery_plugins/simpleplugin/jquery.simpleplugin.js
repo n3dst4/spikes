@@ -9,9 +9,11 @@
  * where you want to perform the same jQuery based operation on every element
  * selected or on the whole lot together.
  *
+ *
  * Usage
  * -----
  * jQuery.simplePlugin(name, func, [defaults, [iterate]])
+ *
  *
  * Example
  * -------
@@ -26,8 +28,9 @@
  *             color: 'green',
  *             background: 'lightgoldenrodyellow'
  *         },
-           false // you could leave this out
+ *         false // you could leave this out
  *     );
+ *
  *
  * Options
  * -------
@@ -44,11 +47,16 @@
  *     will be exposed as jQuery.fn.<name>.defaults. Client code can modify
  *     this object to change the default values for future invocations.
  * iterate: boolean indicating whether the function should be run once for the
-       whole set of selected elements, or once for each element. Default: false.
+ *     whole set of selected elements, or once for each element. Default: false.
+ *
  *
  * Notes
  * -----
- *
+ * If func returns a value, that value will be returned when
+ * the plugin is called. If func does not return a value, then the jQuery object
+ * itself is returned, so the plugin can be used in a chain. Unless the purpose
+ * of your plugin is to return something, then don't return anything (or
+ * return undefined.)
  *
  *
  * Copyright and licence
@@ -82,24 +90,22 @@
 /*global jQuery */
 /*jslint onevar: true, browser: true, undef: true, regexp: true, newcap: true */
 
-
-
 (function(){
     $.simplePlugin = function(name, func, defaults, iterate) {
         if (!name) throw "No name specified for simplePlugin";
         defaults = defaults || {};
         $.fn[name] = function(options) { // actual plugin function
-            var opts;
+            var opts, ret;
             opts = $.extend({}, $.fn[name].defaults, options);
             if (iterate) {
                 this.each(function(){
-                    func.apply($(this), [opts]);
+                    ret = func.apply($(this), [opts]);
                 });
             }
             else {
-                func.apply(this, [opts]);
+                ret = func.apply(this, [opts]);
             }
-            return this; // good puppy
+            return (ret === undefined)?this:ret; // good puppy
         }
         $.fn[name].defaults = defaults;
     };
