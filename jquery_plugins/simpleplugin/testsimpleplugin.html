@@ -1,0 +1,67 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="mul" lang="mul" dir="ltr">
+<head>
+    <title></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <script type="text/javascript" src="jquery.simpleplugin.js"></script>
+    <script type="text/javascript">
+
+        // Create a simpleplugin called colorize, which sets the css color and
+        // background-color. It can be called as $(selector).colorize(options).
+        $.simplePlugin("colorize", //
+            function(opts){
+                this.css('color', opts.color);
+                this.css('background-color', opts.background);
+            },
+            {
+                color: 'green',
+                background: 'lightgoldenrodyellow'
+            }
+        );
+
+        // An example of a simplePlugin which needs to be run individually on
+        // each element (iterate == true.)
+        var number = 1;
+        $.simplePlugin("number",
+            function(opts) {
+                this.html(number);
+                number++;
+            },
+            {},
+            true
+        );
+
+
+        // Try it out
+        $(function(){
+            // use defaults
+            $('#1').colorize();
+
+            // override one or both options
+            $('#2').colorize({color: "red"});
+            $('#3').colorize({background: "lightgrey"});
+            $('#4').colorize({color: "red", background: "lightgrey"});
+
+            // changing a default setting
+            $.fn.colorize.defaults.color = "blue";
+            $('#5').colorize();
+
+            $('.number-me').number()
+        });
+    </script>
+</head>
+<body>
+    <p id="1">Just defaults (green on yellow).</p>
+    <p id="2">Red foreground.</p>
+    <p id="3">Grey background.</p>
+    <p id="4">Red foreground and grey background.</p>
+    <p id="5">Blue foreground.</p>
+    <p class="number-me"></p>
+    <p class="number-me"></p>
+    <p class="number-me"></p>
+    <p class="number-me"></p>
+    <p class="number-me"></p>
+</body>
+</html>
