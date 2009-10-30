@@ -12,7 +12,7 @@
             $('#2').selectable(false);
             $('#3').selectable(false);
             $('#3').selectable(true);
-            $('#output').html(
+            $('#output').append(
                 "#1.selectable(): " + $('#1').selectable() + "<br />" +
                 "#2.selectable(): " + $('#2').selectable() + "<br />" +
                 "#3.selectable(): " + $('#3').selectable()
@@ -22,8 +22,13 @@
 </head>
 <body>
     <p id="1">Untouched - this should be selectable.</p>
-    <p id="2">This should be unselectable.</p>
-    <p id="3">This should be selectable again.</p>
-    <p id="output"></p>
+    <p id="2">This should be unselectable (although in non-Gecko browsers,
+        you'll be able to select it if you start the selection outside of it.)
+        </p>
+    <p id="3">This has been made unselectable and then selectable again, so it
+        should be selectable now.</p>
+    <p id="output">Results of programattically testing selectable() status:
+        <br />
+        </p>
 </body>
 </html>
