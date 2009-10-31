@@ -1,0 +1,50 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="mul" lang="mul" dir="ltr">
+<head>
+    <title></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+    <script type="text/javascript" src="string_format.js"></script>
+    <script type="text/javascript" src="tokenizer-1.0.1.js"></script>
+</head>
+<body>
+    <pre>
+        <script type="text/javascript">
+            print = function() {document.write(arguments.join('') + "<br/>\n");}
+
+            f = new Formatter();
+
+            print(f.vformat("positional arg, one: {0}", ["one"]));
+
+            print(f.vformat("positional arg, one, two: {0}, {1}",
+                ["one", "two"]
+            ));
+
+            print(f.vformat("positional arg, two, one: {1},{0}",
+                ["one", "two"]
+            ));
+
+            print(f.vformat("named arg, fish: {animal}",
+                [],
+                {animal: "fish"}
+            ));
+
+            print(f.vformat("named arg, fish, cheese: {animal}, {food}",
+                [],
+                {animal: "fish", food: "cheese"}
+            ));
+
+            print(f.vformat("positional arg member, red: {0.color}",
+                [{color: "red"}],
+                {}
+            ));
+
+            print(f.vformat("named arg member, plastic: {item.material}",
+                [],
+                {item: {material:"plastic"}}
+            ));
+
+        </script>
+    </pre>
+</body>
+</html>
