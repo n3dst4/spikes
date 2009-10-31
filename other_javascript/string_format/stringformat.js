@@ -12,7 +12,8 @@
     nested_re = /^{(.+)}$/;  // detect nested field name
 
     // [[fill]align][sign][#][0][width][,][.precision][type]
-    spec_re = /^(?:([^}])?[<>=^])?([ +-])?(#)?(0)?(\d+)?(,)?(\.\d+)?([bcdeEfFgGnoxX%])?$/
+    spec_re =
+     /^(?:([^}])?[<>=^])?([ +-])?(#)?(0)?(\d+)?(,)?(\.\d+)?([bcdeEfFgGnoxX%])?$/
 
 
     ////////////////////////////////////////////////////////////////////////////
@@ -53,32 +54,37 @@
         this.conversion = undefined;
         this.format = '';
     }
-
     Field.prototype = {
         /*
          * Given list and object of args, get value referenced by this field.
          */
         getValue: function(args, kwargs) {
-            var numeric = parseInt(this.name), base, i, result;
+            var numeric, base, i, result;
+            numeric = parseInt(this.name)
             // numeric or name?
-            if (int_re.test(this.name)) {
+            if (this.name === undefined) {
+                args.implicit_index = args.implicit_index || 0;
+                base = args[args.implicit_index];
+            }
+            else if (int_re.test(this.name)) {
                 base = args[parseInt(this.name, 10)];
             }
             else {
                 base = kwargs[this.name];
             }
             if (base === undefined) {
-                throw new MissingArgument("no argument " + this.name);
+                throw new MissingArgument("no such argument: " + this.name);
             }
             // drill down through attribute names
             for (i=0; i<this.attributes.length; i++) {
                 result = nested_re.exec(this.attributes[i]);
                 if (result !== null) {
                     // nested attribute ref, like {foo.{bar}}
-                    this.attributes[i] = new Field(result[1]).getValue(args, kwargs);
+                    this.attributes[i] = new Field(result[1])
+                        .getValue(args, kwargs);
                 }
                 if (base[this.attributes[i]] === undefined) {
-                    throw new MissingArgument("no argument "
+                    throw new MissingArgument("no such argument: "
                                             + this.attributes[i]);
                 }
                 else { base = base[this.attributes[i]]; }
@@ -93,7 +99,7 @@
 
 
     /*
-     * A compiled format string, ready to be run against arguments
+     * A Format string, which can be used to produce formatted output.
      */
     _Format = function(text){
         var tokens, i;
@@ -158,7 +164,7 @@
         },
 
         /*
-         * Produce formatted string absed on given values.
+         * Produce formatted string based on given values.
          *
          * Arguments:
          * args: an array of values to be used in string.
@@ -171,8 +177,6 @@
             var out = [], i;
             if (kwargs === undefined) { kwargs = {}; }
             for (i=0; i < this.parts.length; i++) {
-                //console.log("looking at part: " + this.parts[i]);
-                //console.log(typeof(this.parts[i]));
                 if (typeof(this.parts[i]) == "string") {
                     out.push(this.parts[i]);
                 }
@@ -190,17 +194,28 @@
      */
     _Format.states = {
         in_plain_text: function (text, tokn) {
-            if (text == '{') { this.setState("want_field_name"); }
+            if (text == '{') { this.setState("start_field"); }
             else { this.parts.push(text); }
         },
 
-        want_field_name: function (text, tokn) {
+        start_field: function (text, tokn) {
             if (text == '{') {
                 this.parts.push(text);
                 this.setState("in_plain_text");
             }
+            else if (text == ':') {
+                this.setState("want_format");
+            }
+            else if (text == '!') {
+                this.setState("want_conversion");
+            }
+            else if (text == '}') {
+                this.parts.push(this.field);
+                this.field = new Field();
+                this.setState("in_plain_text");
+            }
             else if (tokn) {
-                throw new InvalidFormatString('no name specified');
+                throw new InvalidFormatString('found unexpected ' + text);
             }
             else {
                 this.field.name = text;
@@ -227,7 +242,8 @@
                 this.setState("in_plain_text");
             }
             else {
-                throw new InvalidFormatString("can't cope with a " + text + " here");
+                throw new InvalidFormatString(
+                    "can't cope with a " + text + " here");
             }
         },
 
@@ -256,7 +272,8 @@
 
         want_end_nested_name: function(text, tokn) {
             if (text != '}') {
-                throw new InvalidFormatString('nested attribute name must be one identifier');
+                throw new InvalidFormatString(
+                    'nested attribute name must be one identifier');
             }
             else {
                 this.setState("after_field_name");
@@ -288,7 +305,8 @@
 
         want_end_nested_key: function(text, tokn) {
             if (text != '}') {
-                throw new InvalidFormatString('nested key name must be one identifier');
+                throw new InvalidFormatString(
+                    'nested key name must be one identifier');
             }
             else {
                 this.setState("want_end_of_key");
@@ -307,7 +325,8 @@
 
         want_conversion: function(text, tokn) {
             if (tokn) {
-                throw new InvalidFormatString('! not followed by conversion type');
+                throw new InvalidFormatString(
+                    '! not followed by conversion type');
             }
             else {
                 this.field.conversion = text;
@@ -336,36 +355,39 @@
             Format = Format._Format;
         }
     };
-
-
-
-
-
-    // tests
-    p = new _Format('i am a {myname.myattr[mykey].{mynested}:myformat}');
-    console.log(p.parts);
-
-    p = new _Format('i am a {foo:bar}');
-    console.log(p.parts);
-
-    p = new _Format('i am a {foo!x:bar} with {0[1].2:3} {plort}');
-    console.log(p.parts);
-
-    p = new _Format('i am a {foo.{0}!x:bar} with {0[1].2:3} {plort}');
-    console.log(p.parts);
-
-    p = new _Format('i am a {0} with {1}');
-    console.log(p.format("zero", "one"));
-
-    p = new _Format('i am a {0.name} with {0.color} and {1}');
-    console.log(p.format({name: 'pie', color:'brown'}, "peas"));
-
-    p = new _Format('i am a {0.{1}}');
-    console.log(p.format({name: 'pie', color:'brown'}, "name"));
-
-
 }());
 
+
+
+
+
+// tests
+p = new Format('i am a {myname.myattr[mykey].{mynested}:myformat}');
+console.log(p.parts);
+
+p = new Format('i am a {foo:bar}');
+console.log(p.parts);
+
+p = new Format('i am a {foo!x:bar} with {0[1].2:3} {plort}');
+console.log(p.parts);
+
+p = new Format('i am a {foo.{0}!x:bar} with {0[1].2:3} {plort}');
+console.log(p.parts);
+
+p = new Format('i am a {0} with {1}');
+console.log(p.format("zero", "one"));
+
+p = new Format('i am a {0.name} with {0.color} and {1}');
+console.log(p.format({name: 'pie', color:'brown'}, "peas"));
+
+p = new Format('i am a {0.{1}}');
+console.log(p.format({name: 'pie', color:'brown'}, "name"));
+
+p = new Format('i am a {}');
+console.log(p.format("red herring"));
+
+p = new Format('i am a {:>10}');
+console.log(p.format("blue herring"));
 
 
 
