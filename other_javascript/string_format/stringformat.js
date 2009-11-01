@@ -91,8 +91,10 @@
             numeric = parseInt(this.name)
             // numeric or name?
             if (this.name === undefined) {
+                //console.log(args.implicit_index);
                 args.implicit_index = args.implicit_index || 0;
                 base = args[args.implicit_index];
+                args.implicit_index += 1;
             }
             else if (int_re.test(this.name)) {
                 base = args[parseInt(this.name, 10)];
@@ -165,6 +167,7 @@
             comma = res[7];
             precision = res[8];
             type = res[9];
+            /*
             console.log("format spec: " + this.formatSpec +
                 " means \n" +
                 "fill: " + fill + "\n" +
@@ -180,6 +183,7 @@
                 "typeof(value): " + typeof(value)
 
             );
+            //*/
             if (zero) {
                 fill = fill || "0";
                 align = align || "=";
@@ -190,7 +194,7 @@
             if (type && typeof(value) != "number") {
                 value = parseFloat(value);
             }
-            else if (type === undefined && typeof(value) == "number") {
+            else if ((!type) && typeof(value) == "number") {
                 if (comma) {
                     type = "n";
                 }
@@ -205,7 +209,7 @@
                 precision = parseInt(precision.substr(1));
             }
             if (typeof(value) == "number") {
-                console.log("numeric");
+                //alert("numeric");
                 sign = (value < 0) ? "-" :
                         (sign == "+")? "+" :
                         (sign == " ")? " ":
@@ -221,7 +225,7 @@
                     value = value.toString(10);
                 }
                 else if (type == "o") {
-                    value = (hash?"0":"") + value.toString(8);
+                    value = (hash?"0o":"") + value.toString(8);
                 }
                 else if (type == "x") {
                     value = (hash?"0x":"") + value.toString(16);
@@ -245,7 +249,7 @@
                     value = value.toFixed(precision).toUpperCase();
                 }
                 else if (type == "g") {
-                    value = value.toPrecision(precision);
+                    value = parseFloat(value.toPrecision(precision)).toString();
                 }
                 else if (type == "G") {
                     value = value.toPrecision(precision).toUpperCase();
@@ -261,7 +265,7 @@
                 }
             }
             if (width && value.length < width) {
-                console.log(fill);
+                //console.log(fill);
                 fillwidth = (width - value.length) - sign.length;
                 for (fillpatt=""; fillpatt.length < fillwidth; ) {
                     fillpatt += fill;
@@ -301,6 +305,7 @@
         this.text = text;
         tokens = this.tokenize(text);
         for (i=0; i < tokens.length; i++) {
+            //console.log("token: " + tokens[i])
             this.state.apply(this, tokens[i]);
         }
     }
@@ -318,9 +323,9 @@
             chars = ['{', '}', '.', '[', ']', '!', ':'];
             tokens = [];
             temp = [];
-            textloop: for (i=0; i<this.text.length; i++) {
-                for (j=0; j<chars.length; j++) {
-                    if (this.text.charAt(i) == chars[j]) {
+            textloop: for (i = 0; i < text.length; i++) {
+                for (j=0; j < chars.length; j++) {
+                    if (text.charAt(i) == chars[j]) {
                         if (temp.length) {
                             tokens.push([temp.join(''), false]);
                         }
@@ -329,7 +334,10 @@
                         continue textloop;
                     }
                 }
-                temp.push(this.text.charAt(i));
+                temp.push(text.charAt(i));
+            }
+            if (temp.length) {
+                tokens.push([temp.join(''), false]);
             }
             return tokens;
         },
@@ -369,6 +377,7 @@
             var out = [], i;
             if (kwargs === undefined) { kwargs = {}; }
             for (i=0; i < this.parts.length; i++) {
+                //console.log("part : " + this.parts[i])
                 if (typeof(this.parts[i]) == "string") {
                     out.push(this.parts[i]);
                 }
@@ -588,8 +597,8 @@ console.log(p.format("red herring"));
 p = new Format('i am a {:>10}');
 console.log(p.format("blue herring"));
 */
-p = new Format('i am a !{0:020,.4e}!');
-console.log(p.format(-12345));
+//p = new Format('i am a !{0:020,.4e}!');
+//console.log(p.format(-12345));
 
 
 

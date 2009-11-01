@@ -3,48 +3,18 @@
 <head>
     <title></title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-
+    <!--<script type='text/javascript'
+        src='http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js'></script>-->
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
     <script type="text/javascript" src="./stringformat.js"></script>
+    <script type="text/javascript" src="./qunit.js"></script>
+    <script type="text/javascript" src="./test_stringformat.js"></script>
+    <link rel="stylesheet" href="qunit.css" media="screen"/>
 </head>
 <body>
-    <pre>
-        <script type="text/javascript">
-            /*
-            print = function() {document.write(arguments.join('') + "<br/>\n");}
-
-            f = new Formatter();
-
-            print(f.vformat("positional arg, one: {0}", ["one"]));
-
-            print(f.vformat("positional arg, one, two: {0}, {1}",
-                ["one", "two"]
-            ));
-
-            print(f.vformat("positional arg, two, one: {1},{0}",
-                ["one", "two"]
-            ));
-
-            print(f.vformat("named arg, fish: {animal}",
-                [],
-                {animal: "fish"}
-            ));
-
-            print(f.vformat("named arg, fish, cheese: {animal}, {food}",
-                [],
-                {animal: "fish", food: "cheese"}
-            ));
-
-            print(f.vformat("positional arg member, red: {0.color}",
-                [{color: "red"}],
-                {}
-            ));
-
-            print(f.vformat("named arg member, plastic: {item.material}",
-                [],
-                {item: {material:"plastic"}}
-            ));
-            */
-        </script>
-    </pre>
+    <h1 id="qunit-header">stringformat.js tests</h1>
+    <h2 id="qunit-banner"></h2>
+    <h2 id="qunit-userAgent"></h2>
+    <ol id="qunit-tests"></ol>
 </body>
 </html>
