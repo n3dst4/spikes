@@ -448,6 +448,8 @@ $(function(){
             {},
             "test 34%"
         ],
+
+        ["Empty string", "", [], {}, ""]
     ];
 
 
@@ -457,9 +459,8 @@ $(function(){
     for (i=0; i < tests.length; i++) {
         if ( typeof(tests[i]) == "string") {
             module(tests[i]);
-            continue;
         }
-        if (tests[i][0]) {
+        else {
             (function(){
                 var title, template, arr, obj, right;
                 title = tests[i][0];
