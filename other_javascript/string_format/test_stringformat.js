@@ -1,9 +1,9 @@
-
-
-
+/*
+ * test_stringformat.js - tests for stringformat.js
+ */
 
 $(function(){
-
+    // big array of tests. these get run through QUnit way down there *points*.
     tests = [
         "Basic string substitutions",
         [
@@ -451,6 +451,9 @@ $(function(){
     ];
 
 
+    /*
+     * Run tests
+     */
     for (i=0; i < tests.length; i++) {
         if ( typeof(tests[i]) == "string") {
             module(tests[i]);
@@ -471,11 +474,6 @@ $(function(){
             }());
         }
     }
-
-
-
-
-
 });
 
 
