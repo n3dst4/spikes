@@ -1,9 +1,57 @@
+/*
+ * stringformat.js
+ * ===============
+ * http://bitbucket.org/n3dst4/spikes/
+ *
+ * Formatting and variable substitutions, modelled after Python 3.0's Formatter.
+ *
+ * Usage
+ * -----
+ * f = new Format(template)
+ * f.format([arg, arg...])
+ * f.vformat(args, kwargs)
+ *
+ * Example
+ * -------
+ *
+ *
+ * Notes
+ * -----
+ *
+ *
+ * Copyright and licence
+ * ---------------------
+ * Copyright (c) 2009, Neil de Carteret
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the <organization> nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY NEIL DE CARTERET ''AS IS'' AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL <copyright holder> BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 /*globals Format*/
 
 (function () {
     var int_re, nested_re, spec_re,
-        InvalidFormatString, MissingArgument,
+        InvalidFormatString, MissingArgument, UnknownConversion,
         Field, _Format;
 
     ////////////////////////////////////////////////////////////////////////////
@@ -41,6 +89,17 @@
         return this.name + ': "' + this.message + '"';
     }
 
+    /*
+     * Exception caused by referencing an argument which doesn't exist
+     */
+    UnknownConversion = function (message) {
+        this.message = message;
+        this.name = 'UnknownConversion';
+    }
+    UnknownConversion.prototype.toString = function () {
+        return this.name + ': "' + this.message + '"';
+    }
+
 
     ////////////////////////////////////////////////////////////////////////////
     // Main classes, BABY.
@@ -52,9 +111,17 @@
         this.name = name;
         this.attributes = [];
         this.conversion = undefined;
-        this.format = '';
+        this.formatSpec = '';
     }
     Field.prototype = {
+        /*
+         * Given format args, get formatted, converted str for this field.
+         */
+        getResult: function(args, kwargs) {
+            return this.format(this.convert(this.getValue(args, kwargs)));
+            //return this.convert(this.getValue(args, kwargs));
+        },
+
         /*
          * Given list and object of args, get value referenced by this field.
          */
@@ -92,11 +159,37 @@
             return base;
         },
 
-        formatToSpec: function(value) {
 
+        /*
+         * Apply a conversion to a value
+         */
+        convert: function(value) {
+            if (this.conversion === undefined) {
+                return value;
+            } else {
+                try {
+                    return Field.conversions[this.conversion](value);
+                }
+                catch (e if e.name == "TypeError") {
+                    throw new UnknownConversion("cannot convert: "
+                        + this.conversion);
+                }
+            }
+        },
+
+
+        /*
+         * Format given value according to
+         */
+        format: function(value) {
+            return value;
         }
     };
-
+    Field.conversions = {
+        s: function(value) { return value.toString(); },
+        r: function(value) { return value.toString(); },
+        a: function(value) { return value.toString(); }
+    };
 
     /*
      * A Format string, which can be used to produce formatted output.
@@ -181,7 +274,7 @@
                     out.push(this.parts[i]);
                 }
                 else {
-                    out.push(this.parts[i].getValue(args, kwargs));
+                    out.push(this.parts[i].getResult(args, kwargs));
                 }
             }
             return out.join('');
@@ -341,7 +434,7 @@
                 this.setState("in_plain_text");
             }
             else {
-                this.field.format += text;
+                this.field.formatSpec += text;
             }
         }
     };
@@ -387,6 +480,9 @@ p = new Format('i am a {}');
 console.log(p.format("red herring"));
 
 p = new Format('i am a {:>10}');
+console.log(p.format("blue herring"));
+
+p = new Format('i am a {0!a}');
 console.log(p.format("blue herring"));
 
 
