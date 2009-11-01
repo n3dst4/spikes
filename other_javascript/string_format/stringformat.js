@@ -50,7 +50,7 @@
 /*globals Format*/
 
 (function () {
-    var int_re, nested_re, spec_re, Field, _Format;
+    var int_re, nested_re, spec_re, Field, _Format, generalNumeric;
 
     ////////////////////////////////////////////////////////////////////////////
     // Regexes
@@ -59,7 +59,7 @@
 
     // [[fill]align][sign][#][0][width][,][.precision][type]
     spec_re =
-     /^(?:([^}])?[<>=^])?([ +-])?(#)?(0)?(\d+)?(,)?(\.\d+)?([bcdeEfFgGnoxX%])?$/
+     /^(?:([^}])?([<>=^]))?([ +-])?(#)?(0)?(\d+)?(,)?(\.\d+)?([bcdeEfFgGnoxX%])?$/
 
 
     ////////////////////////////////////////////////////////////////////////////
@@ -132,9 +132,14 @@
                 try {
                     return Field.conversions[this.conversion](value);
                 }
-                catch (e if e.name == "TypeError") {
-                    throw {name: "Unknown Conversion",
-                        message: "cannot convert: " + this.conversion};
+                catch (e) {
+                    if (e.name == "TypeError") {
+                        throw {name: "Unknown Conversion",
+                            message: "cannot convert: " + this.conversion};
+                    }
+                    else {
+                        throw e;
+                    }
                 }
             }
         },
@@ -145,22 +150,138 @@
          */
         format: function(value) {
             var res, fill, align, sign, hash, zero, width, comma, precision,
-                type;
+                type, fillwidth, fillpatt, i;
             if (this.formatSpec === undefined || this.formatSpec == "") {
                 return value;
             }
             res = spec_re.exec(this.formatSpec);
-            if (res === null)
+            //if (res === null)
             fill = res[1];
             align = res[2];
-            sign = res[3];
+            sign = res[3] || "-";
             hash = res[4];
             zero = res[5];
             width = res[6];
             comma = res[7];
             precision = res[8];
             type = res[9];
+            console.log("format spec: " + this.formatSpec +
+                " means \n" +
+                "fill: " + fill + "\n" +
+                "align: " + align + "\n" +
+                "sign: " + sign + "\n" +
+                "hash: " + hash + "\n" +
+                "zero: " + zero + "\n" +
+                "width: " + width + "\n" +
+                "comma: " + comma + "\n" +
+                "precision: " + precision + "\n" +
+                "type: " + type + "\n" +
+                "value: " + value.toSource() + "\n" +
+                "typeof(value): " + typeof(value)
 
+            );
+            if (zero) {
+                fill = fill || "0";
+                align = align || "=";
+            } else {
+                fill = fill || " ";
+                align = align || "<";
+            }
+            if (type && typeof(value) != "number") {
+                value = parseFloat(value);
+            }
+            else if (type === undefined && typeof(value) == "number") {
+                if (comma) {
+                    type = "n";
+                }
+                else if (value % 1 === 0) {
+                    type= "d";
+                }
+                else {
+                    type = "g";
+                }
+            }
+            if (precision) {
+                precision = parseInt(precision.substr(1));
+            }
+            if (typeof(value) == "number") {
+                console.log("numeric");
+                sign = (value < 0) ? "-" :
+                        (sign == "+")? "+" :
+                        (sign == " ")? " ":
+                         "";
+                value = Math.abs(value);
+                if (type == "b") {
+                    value = (hash?"0b":"") + value.toString(2);
+                }
+                else if (type == "c") {
+                    value = String.fromCharCode(value);
+                }
+                else if (type == "d") {
+                    value = value.toString(10);
+                }
+                else if (type == "o") {
+                    value = (hash?"0":"") + value.toString(8);
+                }
+                else if (type == "x") {
+                    value = (hash?"0x":"") + value.toString(16);
+                }
+                else if (type == "X") {
+                    value = (hash?"0x":"") + value.toString(16).toUpperCase();
+                }
+                else if (type == "n") {
+                    value = value.toLocaleString();
+                }
+                else if (type == "e") {
+                    value = value.toExponential();
+                }
+                else if (type == "E") {
+                    value = value.toExponential().toUpperCase();
+                }
+                else if (type == "f") {
+                    value = value.toFixed(precision);
+                }
+                else if (type == "F") {
+                    value = value.toFixed(precision).toUpperCase();
+                }
+                else if (type == "g") {
+                    value = value.toPrecision(precision);
+                }
+                else if (type == "G") {
+                    value = value.toPrecision(precision).toUpperCase();
+                }
+                else if (type == "%") {
+                    value = (value * 100).toFixed(precision) + "%";
+                }
+            }
+            else {
+                value = value.toString();
+                if (precision) {
+                    value = value.substr(0, precision);
+                }
+            }
+            if (width && value.length < width) {
+                console.log(fill);
+                fillwidth = (width - value.length) - sign.length;
+                for (fillpatt=""; fillpatt.length < fillwidth; ) {
+                    fillpatt += fill;
+                }
+                if (align == "<") {
+                    value = sign + value + fillpatt;
+                }
+                else if (align == ">") {
+                    value =  fillpatt + sign + value;
+                }
+                else if (align == "=") {
+                    value =  sign + fillpatt +  value;
+                }
+                else if (align == "^") {
+                    value =  fillpatt.substr(0, Math.floor(fillwidth/2))
+                            + sign + value +
+                            fillpatt.substr(Math.floor(fillwidth/2));
+                }
+            }
+            return value;
         }
     };
     Field.conversions = {
@@ -439,6 +560,7 @@
 
 
 // tests
+/*
 p = new Format('i am a {myname.myattr[mykey].{mynested}:myformat}');
 console.log(p.parts);
 
@@ -465,9 +587,9 @@ console.log(p.format("red herring"));
 
 p = new Format('i am a {:>10}');
 console.log(p.format("blue herring"));
-
-p = new Format('i am a {0!a}');
-console.log(p.format("blue herring"));
+*/
+p = new Format('i am a !{0:020,.4e}!');
+console.log(p.format(-12345));
 
 
 
