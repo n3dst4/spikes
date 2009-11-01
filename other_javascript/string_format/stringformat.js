@@ -47,6 +47,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// Expose Field class as Format.Field
+// _Format -> Format, expose it as this.Format
+// fix thousands separator (,)
+// fix tests to be locale-sensitive
+
+
 /*globals Format*/
 
 (function () {
@@ -167,23 +173,6 @@
             comma = res[7];
             precision = res[8];
             type = res[9];
-            /*
-            console.log("format spec: " + this.formatSpec +
-                " means \n" +
-                "fill: " + fill + "\n" +
-                "align: " + align + "\n" +
-                "sign: " + sign + "\n" +
-                "hash: " + hash + "\n" +
-                "zero: " + zero + "\n" +
-                "width: " + width + "\n" +
-                "comma: " + comma + "\n" +
-                "precision: " + precision + "\n" +
-                "type: " + type + "\n" +
-                "value: " + value.toSource() + "\n" +
-                "typeof(value): " + typeof(value)
-
-            );
-            //*/
             if (zero) {
                 fill = fill || "0";
                 align = align || "=";
@@ -215,48 +204,7 @@
                         (sign == " ")? " ":
                          "";
                 value = Math.abs(value);
-                if (type == "b") {
-                    value = (hash?"0b":"") + value.toString(2);
-                }
-                else if (type == "c") {
-                    value = String.fromCharCode(value);
-                }
-                else if (type == "d") {
-                    value = value.toString(10);
-                }
-                else if (type == "o") {
-                    value = (hash?"0o":"") + value.toString(8);
-                }
-                else if (type == "x") {
-                    value = (hash?"0x":"") + value.toString(16);
-                }
-                else if (type == "X") {
-                    value = (hash?"0x":"") + value.toString(16).toUpperCase();
-                }
-                else if (type == "n") {
-                    value = value.toLocaleString();
-                }
-                else if (type == "e") {
-                    value = value.toExponential();
-                }
-                else if (type == "E") {
-                    value = value.toExponential().toUpperCase();
-                }
-                else if (type == "f") {
-                    value = value.toFixed(precision);
-                }
-                else if (type == "F") {
-                    value = value.toFixed(precision).toUpperCase();
-                }
-                else if (type == "g") {
-                    value = parseFloat(value.toPrecision(precision)).toString();
-                }
-                else if (type == "G") {
-                    value = value.toPrecision(precision).toUpperCase();
-                }
-                else if (type == "%") {
-                    value = (value * 100).toFixed(precision) + "%";
-                }
+                value = Field.types[type](value, hash, precision, this);
             }
             else {
                 value = value.toString();
@@ -293,6 +241,51 @@
         r: function(value) { return value.toString(); },
         a: function(value) { return value.toString(); }
     };
+    Field.types = {
+        b: function(value, hash, precision, field) {
+            return (hash?"0b":"") + value.toString(2);
+        },
+        c: function(value, hash, precision, field) {
+            return String.fromCharCode(value);
+        },
+        d: function(value, hash, precision, field) {
+            return value.toString(10);
+        },
+        o: function(value, hash, precision, field) {
+            return (hash?"0o":"") + value.toString(8);
+        },
+        x: function(value, hash, precision, field) {
+            return (hash?"0x":"") + value.toString(16);
+        },
+        X: function(value, hash, precision, field) {
+            return (hash?"0x":"") + value.toString(16).toUpperCase();
+        },
+        n: function(value, hash, precision, field) {
+            return value.toLocaleString();
+        },
+        e: function(value, hash, precision, field) {
+            return value.toExponential();
+        },
+        E: function(value, hash, precision, field) {
+            return value.toExponential().toUpperCase();
+        },
+        f: function(value, hash, precision, field) {
+            return value.toFixed(precision);
+        },
+        F: function(value, hash, precision, field) {
+            return value.toFixed(precision).toUpperCase();
+        },
+        g: function(value, hash, precision, field) {
+            return parseFloat(value.toPrecision(precision)).toString();
+        },
+        G: function(value, hash, precision, field) {
+            return value.toPrecision(precision).toUpperCase();
+        },
+        '%': function(value, hash, precision, field) {
+            return (value * 100).toFixed(precision) + "%";
+        }
+    };
+
 
     /*
      * A Format string, which can be used to produce formatted output.
