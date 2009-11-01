@@ -50,9 +50,7 @@
 /*globals Format*/
 
 (function () {
-    var int_re, nested_re, spec_re,
-        InvalidFormatString, MissingArgument, UnknownConversion,
-        Field, _Format;
+    var int_re, nested_re, spec_re, Field, _Format;
 
     ////////////////////////////////////////////////////////////////////////////
     // Regexes
@@ -62,43 +60,6 @@
     // [[fill]align][sign][#][0][width][,][.precision][type]
     spec_re =
      /^(?:([^}])?[<>=^])?([ +-])?(#)?(0)?(\d+)?(,)?(\.\d+)?([bcdeEfFgGnoxX%])?$/
-
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Exceptions
-
-    /*
-     * Exception caused by invalid format string
-     */
-    InvalidFormatString = function (message) {
-        this.message = message;
-        this.name = 'InvalidFormatString';
-    }
-    InvalidFormatString.prototype.toString = function () {
-        return this.name + ': "' + this.message + '"';
-    }
-
-    /*
-     * Exception caused by referencing an argument which doesn't exist
-     */
-    MissingArgument = function (message) {
-        this.message = message;
-        this.name = 'MissingArgument';
-    }
-    MissingArgument.prototype.toString = function () {
-        return this.name + ': "' + this.message + '"';
-    }
-
-    /*
-     * Exception caused by referencing an argument which doesn't exist
-     */
-    UnknownConversion = function (message) {
-        this.message = message;
-        this.name = 'UnknownConversion';
-    }
-    UnknownConversion.prototype.toString = function () {
-        return this.name + ': "' + this.message + '"';
-    }
 
 
     ////////////////////////////////////////////////////////////////////////////
@@ -140,7 +101,8 @@
                 base = kwargs[this.name];
             }
             if (base === undefined) {
-                throw new MissingArgument("no such argument: " + this.name);
+                throw {name: "Missing Argument",
+                    message: "no such argument: " + this.name};
             }
             // drill down through attribute names
             for (i=0; i<this.attributes.length; i++) {
@@ -151,8 +113,8 @@
                         .getValue(args, kwargs);
                 }
                 if (base[this.attributes[i]] === undefined) {
-                    throw new MissingArgument("no such argument: "
-                                            + this.attributes[i]);
+                    throw {name: "Missing Argument",
+                        message: "no such argument: " + this.attributes[i]};
                 }
                 else { base = base[this.attributes[i]]; }
             }
@@ -171,8 +133,8 @@
                     return Field.conversions[this.conversion](value);
                 }
                 catch (e if e.name == "TypeError") {
-                    throw new UnknownConversion("cannot convert: "
-                        + this.conversion);
+                    throw {name: "Unknown Conversion",
+                        message: "cannot convert: " + this.conversion};
                 }
             }
         },
@@ -182,7 +144,23 @@
          * Format given value according to
          */
         format: function(value) {
-            return value;
+            var res, fill, align, sign, hash, zero, width, comma, precision,
+                type;
+            if (this.formatSpec === undefined || this.formatSpec == "") {
+                return value;
+            }
+            res = spec_re.exec(this.formatSpec);
+            if (res === null)
+            fill = res[1];
+            align = res[2];
+            sign = res[3];
+            hash = res[4];
+            zero = res[5];
+            width = res[6];
+            comma = res[7];
+            precision = res[8];
+            type = res[9];
+
         }
     };
     Field.conversions = {
@@ -287,28 +265,29 @@
      */
     _Format.states = {
         in_plain_text: function (text, tokn) {
-            if (text == '{') { this.setState("start_field"); }
+            if (text == "{") { this.setState("start_field"); }
             else { this.parts.push(text); }
         },
 
         start_field: function (text, tokn) {
-            if (text == '{') {
+            if (text == "{") {
                 this.parts.push(text);
                 this.setState("in_plain_text");
             }
-            else if (text == ':') {
+            else if (text == ":") {
                 this.setState("want_format");
             }
-            else if (text == '!') {
+            else if (text == "!") {
                 this.setState("want_conversion");
             }
-            else if (text == '}') {
+            else if (text == "}") {
                 this.parts.push(this.field);
                 this.field = new Field();
                 this.setState("in_plain_text");
             }
             else if (tokn) {
-                throw new InvalidFormatString('found unexpected ' + text);
+                throw {name: "Invalid format string",
+                    message: "found unexpected " + text};
             }
             else {
                 this.field.name = text;
@@ -320,23 +299,23 @@
             if (text == '.') {
                 this.setState("want_attribute");
             }
-            else if (text == '[') {
+            else if (text == "[") {
                 this.setState("want_key");
             }
-            else if (text == ':') {
+            else if (text == ":") {
                 this.setState("want_format");
             }
-            else if (text == '!') {
+            else if (text == "!") {
                 this.setState("want_conversion");
             }
-            else if (text == '}') {
+            else if (text == "}") {
                 this.parts.push(this.field);
                 this.field = new Field();
                 this.setState("in_plain_text");
             }
             else {
-                throw new InvalidFormatString(
-                    "can't cope with a " + text + " here");
+                throw {name: "Invalid format string",
+                    message: "can't cope with a " + text + " here"};
             }
         },
 
@@ -345,7 +324,8 @@
                 this.setState("want_nested_name");
             }
             else if (tokn) {
-                throw new InvalidFormatString('no attribute name specified');
+                throw {name: "Invalid format string",
+                    message: "no attribute name specified"};
             }
             else {
                 this.field.attributes.push(text);
@@ -355,18 +335,19 @@
 
         want_nested_name: function(text, tokn) {
             if (tokn) {
-                throw new InvalidFormatString('no nested name specified');
+                throw {name: "Invalid format string",
+                    message: "no nested name specified"};
             }
             else {
-                this.field.attributes.push('{' + text + '}');
+                this.field.attributes.push("{" + text + "}");
                 this.setState("want_end_nested_name");
             }
         },
 
         want_end_nested_name: function(text, tokn) {
-            if (text != '}') {
-                throw new InvalidFormatString(
-                    'nested attribute name must be one identifier');
+            if (text != "}") {
+                throw {name: "Invalid format string",
+                    message: "nested attribute name must be one identifier"};
             }
             else {
                 this.setState("after_field_name");
@@ -378,7 +359,8 @@
                 this.setState("want_nested_key");
             }
             else if (tokn) {
-                throw new InvalidFormatString('no key specified');
+                throw {name: "Invalid format string",
+                    message: "no key specified"};
             }
             else {
                 this.field.attributes.push(text);
@@ -388,18 +370,19 @@
 
         want_nested_key: function(text, tokn) {
             if (tokn) {
-                throw new InvalidFormatString('no nested key specified');
+                throw {name: "Invalid format string",
+                    message: "no nested key specified"};
             }
             else {
-                this.field.attributes.push('{' + text + '}');
+                this.field.attributes.push("{" + text + "}");
                 this.setState("want_end_nested_key");
             }
         },
 
         want_end_nested_key: function(text, tokn) {
             if (text != '}') {
-                throw new InvalidFormatString(
-                    'nested key name must be one identifier');
+                throw {name: "Invalid format string",
+                    message: "nested key name must be one identifier"};
             }
             else {
                 this.setState("want_end_of_key");
@@ -409,7 +392,8 @@
 
         want_end_of_key: function(text, tokn) {
             if (text != ']') {
-                throw new InvalidFormatString("key name doesn't end in a ]");
+                throw {name: "Invalid format string",
+                    message: "key name doesn't end in a ]"};
             }
             else {
                 this.setState("after_field_name");
@@ -418,8 +402,8 @@
 
         want_conversion: function(text, tokn) {
             if (tokn) {
-                throw new InvalidFormatString(
-                    '! not followed by conversion type');
+                throw {name: "Invalid format string",
+                    message: " not followed by conversion type"};
             }
             else {
                 this.field.conversion = text;
