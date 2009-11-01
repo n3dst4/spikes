@@ -47,8 +47,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Expose Field class as Format.Field
-// _Format -> Format, expose it as this.Format
 // fix thousands separator (,)
 // fix tests to be locale-sensitive
 
@@ -56,7 +54,7 @@
 /*globals Format*/
 
 (function () {
-    var int_re, nested_re, spec_re, Field, _Format, generalNumeric;
+    var int_re, nested_re, spec_re, Field, Format, generalNumeric;
 
     ////////////////////////////////////////////////////////////////////////////
     // Regexes
@@ -276,10 +274,13 @@
             return value.toFixed(precision).toUpperCase();
         },
         g: function(value, hash, precision, field) {
-            return parseFloat(value.toPrecision(precision)).toString();
+            var sig;
+            if (precision) { sig = value.toPrecision(precision); }
+            else { sig = value; }
+            return parseFloat(sig).toString();
         },
         G: function(value, hash, precision, field) {
-            return value.toPrecision(precision).toUpperCase();
+            return value.toPrecision(precision||undefined).toUpperCase();
         },
         '%': function(value, hash, precision, field) {
             return (value * 100).toFixed(precision) + "%";
@@ -290,7 +291,7 @@
     /*
      * A Format string, which can be used to produce formatted output.
      */
-    _Format = function(text){
+    Format = function(text){
         var tokens, i;
         this.parts = [];
         this.field = new Field();
@@ -302,7 +303,8 @@
             this.state.apply(this, tokens[i]);
         }
     }
-    _Format.prototype = {
+    Format.Field = Field;
+    Format.prototype = {
         /*
          * Tokenize input using simple tokens.
          *
@@ -339,10 +341,10 @@
          * Set the state of the parser to named value.
          *
          * In default implementation, this should be the name of a state
-         * function in _Format.states.
+         * function in Format.states.
          */
         setState: function(state) {
-            this.state = _Format.states[state];
+            this.state = Format.states[state];
         },
 
         /*
@@ -386,7 +388,7 @@
     /*
      * This is all of the default formatter's parsing states.
      */
-    _Format.states = {
+    Format.states = {
         in_plain_text: function (text, tokn) {
             if (text == "{") { this.setState("start_field"); }
             else { this.parts.push(text); }
@@ -548,50 +550,12 @@
 
 
     // Preserve global original
-    _Format._Format = typeof(Format)=="undefined"?undefined:Format;
-    Format = _Format;
-    Format.noConflict = function () {
-        if (_Format._Format !== undefined) {
-            Format = Format._Format;
-        }
-    };
+    Format._Format = this.Format;
+    this.Format = Format;
+    Format.noConflict = function () { this.Format = Format._Format; };
 }());
 
 
-
-
-
-// tests
-/*
-p = new Format('i am a {myname.myattr[mykey].{mynested}:myformat}');
-console.log(p.parts);
-
-p = new Format('i am a {foo:bar}');
-console.log(p.parts);
-
-p = new Format('i am a {foo!x:bar} with {0[1].2:3} {plort}');
-console.log(p.parts);
-
-p = new Format('i am a {foo.{0}!x:bar} with {0[1].2:3} {plort}');
-console.log(p.parts);
-
-p = new Format('i am a {0} with {1}');
-console.log(p.format("zero", "one"));
-
-p = new Format('i am a {0.name} with {0.color} and {1}');
-console.log(p.format({name: 'pie', color:'brown'}, "peas"));
-
-p = new Format('i am a {0.{1}}');
-console.log(p.format({name: 'pie', color:'brown'}, "name"));
-
-p = new Format('i am a {}');
-console.log(p.format("red herring"));
-
-p = new Format('i am a {:>10}');
-console.log(p.format("blue herring"));
-*/
-//p = new Format('i am a !{0:020,.4e}!');
-//console.log(p.format(-12345));
 
 
 

@@ -439,7 +439,7 @@ $(function(){
             "test {0:n}",
             [12345678.9123],
             {},
-            "test 12,345,678.9123"
+            "test " + (12345678.9123).toLocaleString()
         ],
         [
             "Percentage format",
