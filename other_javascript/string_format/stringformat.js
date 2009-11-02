@@ -17,6 +17,7 @@
  *
  * Notes
  * -----
+ * format spec: [[fill]align][sign][#][0][width][,][.precision][type]
  *
  *
  * Copyright and licence
@@ -47,8 +48,13 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// fix thousands separator (,)
-// subfields anywhere!
+// fix thousands separator (,) - general commify function
+// "n" + "," throws error // really? how 'bout allowing commify as fallback?
+// f defaults to 6 figures precision
+// e is exponent, f is fixed, g is "normal" (.toString), n is .toLocaleString
+// % is in fixed <- actually that's a bit crap,
+//
+// subfields anywhere
 // finish docco
 // jslint
 
@@ -56,16 +62,45 @@
 
 
 (function () {
-    var int_re, nested_re, spec_re, Field, Format, generalNumeric;
+    var int_re, nested_re, spec_re, Field, Format, generalNumeric, commify;
 
     ////////////////////////////////////////////////////////////////////////////
     // Regexes
     int_re = /^\d+$/;        // find decimal integers
     nested_re = /^{(.+)}$/;  // detect nested field name
-
-    // [[fill]align][sign][#][0][width][,][.precision][type]
     spec_re =
      /^(?:([^}])?([<>=^]))?([ +-])?(#)?(0)?(\d+)?(,)?(\.\d+)?([bcdeEfFgGnoxX%])?$/
+    commify_re = /^([^\.]*?)(\d+)(\.?)/;
+
+    /*
+     * turn a number into a string with "," signs between groups of thousands
+     *
+     * args:
+     * num: the number to format. can also be a string containing one valid
+     *          number somewhere within it.
+     * thousand_sep: (optional) the character to use as the thousand-separator.
+     * decimal_sep: (optional) the character to use instead of "." before the
+     *          fractional part of the number
+     *          Jonny Foreigner mike like
+     */
+    commify = function(num, thousand_sep, decimal_sep) {
+        thousand_sep = thousand_sep || ",";
+        decimal_sep = decimal_sep || ".";
+        num = num.toString();
+        return num.replace(commify_re, function (str, prefix, digits, decimal) {
+            var i, result;
+            groups = [];
+            if (digits.length % 3 != 0) {
+                groups.push(digits.substr(0, digits.length % 3));
+                digits = digits.substr(digits.length % 3);
+            }
+            for (i = 0; i <digits.length; i += 3) {
+                groups.push( digits.substr(i, 3) );
+            }
+            return prefix + groups.join(thousand_sep) +
+                (decimal?decimal_sep:"");
+        });
+    };
 
 
     ////////////////////////////////////////////////////////////////////////////
@@ -86,7 +121,6 @@
          */
         getResult: function(args, kwargs) {
             return this.format(this.convert(this.getValue(args, kwargs)));
-            //return this.convert(this.getValue(args, kwargs));
         },
 
         /*
@@ -158,13 +192,13 @@
          */
         format: function(value) {
             var res, fill, align, sign, hash, zero, width, comma, precision,
-                type, fillwidth, fillpatt, i;
+                type, fillwidth, fillpatt, i, spec;
             //if (this.formatSpec === undefined || this.formatSpec == "") {
             //    return value;
             //}
             // Get field values
             res = spec_re.exec(this.formatSpec);
-            fill = res[1]; align = res[2]; sign = res[3] || "-"; hash = res[4];
+            fill = res[1]; align = res[2]; sign = res[3] || ""; hash = res[4];
             zero = res[5]; width = res[6]; comma = res[7];  precision = res[8];
             type = res[9];
             // 0<width> is a convenience, equivalent to starting with "0="
@@ -190,12 +224,11 @@
             // calculate actual sign
             if (typeof(value) == "number") {
                 sign = (value < 0) ? "-" :
-                        (sign == "+")? "+" :
-                        (sign == " ")? " ":
-                         "";
+                        (sign == "-")? "":sign;
+
                 value = Math.abs(value);
                 // apply type
-                value = Field.types[type](value, hash, precision, this);
+                value = Field.types[type](value, hash, precision, comma);
             }
             else {
                 value = value.toString();
@@ -224,6 +257,9 @@
                             fillpatt.substr(Math.floor(fillwidth/2));
                 }
             }
+            else {
+                value = sign + value;
+            }
             return value;
         }
     };
@@ -233,37 +269,40 @@
         a: function(value) { return value.toString(); }
     };
     Field.types = {
-        b: function(value, hash, precision, field) {
+        b: function(value, hash, precision, comma) {
             return (hash?"0b":"") + value.toString(2);
         },
-        c: function(value, hash, precision, field) {
+        c: function(value, hash, precision, comma) {
             return String.fromCharCode(value);
         },
-        d: function(value, hash, precision, field) {
-            return value.toString(10);
+        d: function(value, hash, precision, comma) {
+            var s = value.toString(10);
+            return comma? commify(s) : s;
         },
-        o: function(value, hash, precision, field) {
+        o: function(value, hash, precision, comma) {
             return (hash?"0o":"") + value.toString(8);
         },
-        x: function(value, hash, precision, field) {
+        x: function(value, hash, precision, comma) {
             return (hash?"0x":"") + value.toString(16);
         },
-        n: function(value, hash, precision, field) {
-            return value.toLocaleString();
+        n: function(value, hash, precision, comma) {
+            var s = value.toLocaleString();
+
+            return s;
         },
-        e: function(value, hash, precision, field) {
+        e: function(value, hash, precision, comma) {
             return value.toExponential();
         },
-        f: function(value, hash, precision, field) {
+        f: function(value, hash, precision, comma) {
             return value.toFixed(precision);
         },
-        g: function(value, hash, precision, field) {
+        g: function(value, hash, precision, comma) {
             var sig;
             if (precision) { sig = value.toPrecision(precision); }
             else { sig = value; }
             return parseFloat(sig).toString();
         },
-        '%': function(value, hash, precision, field) {
+        '%': function(value, hash, precision, comma) {
             return (value * 100).toFixed(precision) + "%";
         },
 
@@ -274,8 +313,8 @@
         E: function() {
             return Field.types.e.apply(this, arguments).toUpperCase();
         },
-        X: function() {
-            return Field.types.x.apply(this, arguments).toUpperCase();
+        X: function(value, hash, precision, comma) {
+            return (hash?"0x":"") + value.toString(16).toUpperCase();
         },
         G: function() {
             return Field.types.g.apply(this, arguments).toUpperCase();
@@ -544,6 +583,8 @@
     };
 
 
+    // seems handy
+    Format.commify = commify;
     // Preserve global original
     Format._Format = this.Format;
     this.Format = Format;
