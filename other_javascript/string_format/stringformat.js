@@ -48,10 +48,12 @@
  */
 
 // fix thousands separator (,)
-// fix tests to be locale-sensitive
-
+// subfields anywhere!
+// finish docco
+// jslint
 
 /*globals Format*/
+
 
 (function () {
     var int_re, nested_re, spec_re, Field, Format, generalNumeric;
@@ -152,56 +154,47 @@
 
 
         /*
-         * Format given value according to
+         * Format given value according to format spec
          */
         format: function(value) {
             var res, fill, align, sign, hash, zero, width, comma, precision,
                 type, fillwidth, fillpatt, i;
-            if (this.formatSpec === undefined || this.formatSpec == "") {
-                return value;
-            }
+            //if (this.formatSpec === undefined || this.formatSpec == "") {
+            //    return value;
+            //}
+            // Get field values
             res = spec_re.exec(this.formatSpec);
-            //if (res === null)
-            fill = res[1];
-            align = res[2];
-            sign = res[3] || "-";
-            hash = res[4];
-            zero = res[5];
-            width = res[6];
-            comma = res[7];
-            precision = res[8];
+            fill = res[1]; align = res[2]; sign = res[3] || "-"; hash = res[4];
+            zero = res[5]; width = res[6]; comma = res[7];  precision = res[8];
             type = res[9];
-            if (zero) {
-                fill = fill || "0";
-                align = align || "=";
+            // 0<width> is a convenience, equivalent to starting with "0="
+            if (zero && !fill && !align) {
+                fill = "0";
+                align = "=";
             } else {
                 fill = fill || " ";
                 align = align || "<";
             }
+            // types codes require numeric values, so parse them out here...?
             if (type && typeof(value) != "number") {
                 value = parseFloat(value);
             }
+            // otherwise, set a default type
             else if ((!type) && typeof(value) == "number") {
-                if (comma) {
-                    type = "n";
-                }
-                else if (value % 1 === 0) {
-                    type= "d";
-                }
-                else {
-                    type = "g";
-                }
+                if (comma) { type = "n"; }
+                else if (value % 1 === 0) { type= "d"; }
+                else { type = "g"; }
             }
-            if (precision) {
-                precision = parseInt(precision.substr(1));
-            }
+            // remove leading dot from precision
+            if (precision) { precision = parseInt(precision.substr(1)); }
+            // calculate actual sign
             if (typeof(value) == "number") {
-                //alert("numeric");
                 sign = (value < 0) ? "-" :
                         (sign == "+")? "+" :
                         (sign == " ")? " ":
                          "";
                 value = Math.abs(value);
+                // apply type
                 value = Field.types[type](value, hash, precision, this);
             }
             else {
@@ -210,8 +203,8 @@
                     value = value.substr(0, precision);
                 }
             }
+            // fill
             if (width && value.length < width) {
-                //console.log(fill);
                 fillwidth = (width - value.length) - sign.length;
                 for (fillpatt=""; fillpatt.length < fillwidth; ) {
                     fillpatt += fill;
@@ -255,23 +248,14 @@
         x: function(value, hash, precision, field) {
             return (hash?"0x":"") + value.toString(16);
         },
-        X: function(value, hash, precision, field) {
-            return (hash?"0x":"") + value.toString(16).toUpperCase();
-        },
         n: function(value, hash, precision, field) {
             return value.toLocaleString();
         },
         e: function(value, hash, precision, field) {
             return value.toExponential();
         },
-        E: function(value, hash, precision, field) {
-            return value.toExponential().toUpperCase();
-        },
         f: function(value, hash, precision, field) {
             return value.toFixed(precision);
-        },
-        F: function(value, hash, precision, field) {
-            return value.toFixed(precision).toUpperCase();
         },
         g: function(value, hash, precision, field) {
             var sig;
@@ -279,11 +263,22 @@
             else { sig = value; }
             return parseFloat(sig).toString();
         },
-        G: function(value, hash, precision, field) {
-            return value.toPrecision(precision||undefined).toUpperCase();
-        },
         '%': function(value, hash, precision, field) {
             return (value * 100).toFixed(precision) + "%";
+        },
+
+        // capitalised versions
+        F: function() {
+            return Field.types.f.apply(this, arguments).toUpperCase();
+        },
+        E: function() {
+            return Field.types.e.apply(this, arguments).toUpperCase();
+        },
+        X: function() {
+            return Field.types.x.apply(this, arguments).toUpperCase();
+        },
+        G: function() {
+            return Field.types.g.apply(this, arguments).toUpperCase();
         }
     };
 

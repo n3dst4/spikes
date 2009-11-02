@@ -351,11 +351,11 @@ $(function(){
             "test -000001000"
         ],
         [
-            "Leading zero on width with > alignment",
+            "Zero is ignored when alignment is specified",
             "test {0:>010}",
             [-1000],
             {},
-            "test 00000-1000"
+            "test      -1000"
         ],
         [
             "Character repesentation",
