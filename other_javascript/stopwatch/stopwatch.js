@@ -65,9 +65,10 @@ stopwatch = {
         this._times[label][0] = null;
     },
     report: function() {
-        var rep;
-        for (var i in this._times)
+        var rep, i;
+        for (i=0; i<this._times.length; i++) {
             rep += i + ": " + this._times[i][1] + "\n";
+        }
         return rep;
     },
     reset: function() {
