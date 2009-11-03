@@ -56,18 +56,33 @@
 stopwatch = {
     _times: {},
     start: function(label) {
-        if (typeof this._times[label] === "undefined")
-            this._times[label] = [null, null];
-        this._times[label][0] = new Date().getTime();
+        if (typeof this._times[label] === "undefined") {
+            this._times[label] = {calls:0, start:0, total:0};
+        }
+        if (this._times[label].start) {
+            this.stop(label);
+        }
+        this._times[label].calls++;
+        this._times[label].start = new Date().getTime();
     },
     stop: function(label) {
-        this._times[label][1] += (new Date().getTime() - this._times[label][0]);
-        this._times[label][0] = null;
+        var diff;
+        if (!this._times[label].start) {
+            throw { name: "Stopwatch error",
+                message: "Can't stop \"" + label
+                + "\" because it hasn't been started yet."}
+        }
+        diff = new Date().getTime() - this._times[label].start;
+        this._times[label].total += diff;
+        this._times[label].start = null;
     },
     report: function() {
         var rep, i;
-        for (i=0; i<this._times.length; i++) {
-            rep += i + ": " + this._times[i][1] + "\n";
+        rep = "";
+        for (i in this._times) {
+            rep += i + ": " + this._times[i].total + "ms in " +
+                this._times[i].calls + " calls (avg. " +
+                Math.round(this._times[i].total/this._times[i].calls) + "ms)\n";
         }
         return rep;
     },
