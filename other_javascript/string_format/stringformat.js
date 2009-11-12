@@ -62,7 +62,8 @@
 
 
 (function () {
-    var int_re, nested_re, spec_re, Field, Format, generalNumeric, commify;
+    var int_re, nested_re, spec_re, Field, Format, generalNumeric, commify,
+            Tokenizer;
 
     ////////////////////////////////////////////////////////////////////////////
     // Regexes
@@ -323,64 +324,102 @@
 
 
     /*
+     * A stream of tokens
+     * @constructor
+     */
+    Tokenizer = function (text) {
+        this.text = text;
+        this.start = 0;
+        this.end = 0;
+        this.token = null;
+    };
+    Tokenizer.prototype = {
+        get: function () {
+            var text, i, re, score, match, bestMatch, bestScore, bestType, tok;
+            if (this.token) {
+                return this.token;
+            }
+            text = this.text.substr(this.end);
+            bestMatch = "";
+            bestScore = -1;
+            bestType = null;
+            for (i=0; i < arguments.length; i++) {
+                re = Tokenizer.tokens[arguments[i]].pattern;
+                score = Tokenizer.tokens[arguments[i]].score;
+                match = re.exec(text);
+                if (match !== null &&
+                        (match[0].length > bestMatch.length ||
+                        (match[0].length == bestMatch.length &&
+                        score > bestScore)) {
+                    bestMatch = match[0];
+                    bestScore = score;
+                    bestType = arguments[i];
+                }
+            }
+            if (bestType) {
+                tok = {
+                    text: bestMatch,
+                    type: bestType,
+                    start: this.start,
+                    end: this.start + bestMatch.length,
+                    length: bestMatch.length,
+                    toString: function() { return this.text; }
+                };
+                this.start = this.end;
+                this.end = this.end + bestMatch.length;
+                this.token = tok;
+            }
+            else {
+                throw {name: "Parsing error",
+                        message: "Unexpected character " + text.substr(0,1) +
+                        " at position " + this.end + " in format string"}
+            }
+            return tok;
+        },
+        next: function () {
+            this.token = null;
+            this.start = this.end;
+            return this.get.apply(this, arguments);
+        },
+        is: function () {
+            var i, isIn;
+            isIn = false;
+            for(i = 0; i < arguments.length && isIn === false; i++) {
+                isIn = this.token.type == arguments[i];
+            }
+            return isIn;
+        },
+        hasMore: function () {
+            return this.end < this.text.length;
+        }
+    };
+    Tokenizer.tokens = {
+        OPENCURLY:      {score: 1,  pattern: /^{/ },
+        CLOSECURLY:     {score: 2,  pattern: /^}/ },
+        OPENSQUARE:     {score: 3,  pattern: /^\[/ },
+        CLOSESQUARE:    {score: 4,  pattern: /^\]/ },
+        DOT:            {score: 5,  pattern: /^\./ },
+        BANG:           {score: 6,  pattern: /^!/ },
+        COLON:          {score: 7,  pattern: /^:/ },
+        LITERALCHARS:   {score: 8,  pattern: /^(?:[^{]|{{)+/ },
+        IDCHARS:        {score: 9,  pattern: /^[^\[\]{}:!\.]+/ },
+        CONVERSIONCHAR: {score: 10, pattern: /^[rsa]/ },
+        FORMATCHARS:    {score: 11, pattern: /^[^{}]+/ }
+    }
+
+
+    /*
      * A Format string, which can be used to produce formatted output.
      */
-    Format = function(text){
+    Format = function (text) {
         var tokens, i;
         this.parts = [];
-        this.field = new Field();
-        this.setState("in_plain_text");
         this.text = text;
-        tokens = this.tokenize(text);
-        for (i=0; i < tokens.length; i++) {
-            //console.log("token: " + tokens[i])
-            this.state.apply(this, tokens[i]);
-        }
-    }
+        token = new Tokenizer(text);
+        this.parts = Format.parser.formatString(token);
+    };
     Format.Field = Field;
     Format.prototype = {
-        /*
-         * Tokenize input using simple tokens.
-         *
-         * Return value is an array of tokens. For each token:
-         * token[0] is the actual text of the token.
-         * token[1] is a boolean indicating whether this is a "real" token
-         *      (true) or just intervening plain text (false).
-         */
-        tokenize: function(text) {
-            var chars, tokens, temp, i, j;
-            chars = ['{', '}', '.', '[', ']', '!', ':'];
-            tokens = [];
-            temp = [];
-            textloop: for (i = 0; i < text.length; i++) {
-                for (j=0; j < chars.length; j++) {
-                    if (text.charAt(i) == chars[j]) {
-                        if (temp.length) {
-                            tokens.push([temp.join(''), false]);
-                        }
-                        tokens.push([chars[j], true]);
-                        temp = [];
-                        continue textloop;
-                    }
-                }
-                temp.push(text.charAt(i));
-            }
-            if (temp.length) {
-                tokens.push([temp.join(''), false]);
-            }
-            return tokens;
-        },
-
-        /*
-         * Set the state of the parser to named value.
-         *
-         * In default implementation, this should be the name of a state
-         * function in Format.states.
-         */
-        setState: function(state) {
-            this.state = Format.states[state];
-        },
-
         /*
          * Produce formatted string absed on given values.
          *
@@ -415,6 +454,95 @@
                 }
             }
             return out.join('');
+        }
+    };
+
+
+    Format.parser = {
+        // entire template
+        formatString: function(token) {
+            var parts, tok;
+            parts = [];
+            while (token.hasMore()) {
+                token.next("OPENCURLY", "LITERALCHARS");
+                if (token.is("OPENCURLY")) {
+                    parts.push(this.field(token));
+                }
+                else {
+                    parts.push(token.get().text);
+                }
+            }
+            return parts;
+        },
+
+        // top-level { } pair
+        field: function(token) {
+            var field_name_parts;
+            var field = new Field();
+            token.next("IDCHARS", "BANG", "COLON", "CLOSECURLY");
+
+            while (!token.equals("}")) {
+                if (token.equals("!")) {
+                    token.next();
+                    field.conversion = this.conversion(token);
+                }
+                else if (token.equals(":")) {
+                    token.next();
+                    field.formatSpec = this.formatSpec(token);
+                }
+                else {
+                    field_name_parts = this.fieldName(token);
+                    field.name = field_name_parts[0];
+                    field.attributes = field_name_parts.slice(1);
+                    token.next();
+                }
+            }
+            return field;
+        },
+
+        // identifying part of a field
+        fieldName: function(token) {
+            var parts, brack;
+            parts = [];
+            parts.push(token.get()); // actual name or id
+            token.next();
+            while (token.isIn(".", "[")) {
+                if (token.equals("[")) { brack = true; }
+                token.next();
+                if (token.equals("{")) {
+                    token.next();
+                    parts.push(this.simpleField(token));
+                }
+                else {
+                    parts.push(token.get());
+                    token.next();
+                    if (brack && token.equals("]")) {
+                        token.next();
+                    }
+                }
+            }
+            return parts;
+        },
+        simpleField: function(token) {
+            var field, parts;
+            field = new Field();
+            if (token.equals("}")) {
+                parts = fieldName(token);
+                field.name = parts[0];
+                field.attributes = parts.slice(1);
+                token.next();
+            }
+            return field;
+        },
+        subkey: function(token) {
+        },
+        key: function(token) {
+        },
+        conversion: function(token) {
+            return "conversion";
+        },
+        formatSpec: function(token) {
+            return "format spec";
         }
     };
 

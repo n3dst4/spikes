@@ -1,0 +1,28 @@
+//Tiny Parser Generator v1.2
+//Copyright © Herre Kuijpers 2008-2010
+
+//FORMATCHARS -> @"(?:([^}])?([<>=^]))?([ +-])?(#)?(0)?(\d+)?(,)?(\.\d+)?([bcdeEfFgGnoxX%])?";
+OPENCURLY -> @"{";
+CLOSECURLY -> @"}";
+OPENSQUARE -> @"\[";
+CLOSESQUARE -> @"\]";
+DOT -> @"\.";
+BANG -> @"!";
+COLON -> @":";
+ESCAPE -> @"{{";
+
+LITERALCHARS -> @"(?:[^{]|{{)+";
+IDCHARS -> @"[^\[\]{}:!\.]+";
+CONVERSIONCHAR -> @"[rsa]";
+FORMATCHARS -> @"[^{}]+";
+
+Start ->  ( LITERALCHARS | Field )*;
+Field  -> OPENCURLY FieldName? Conversion? FormatSpec? CLOSECURLY ;
+FieldName -> Identifier Subkey*;
+Identifier -> IDCHARS;
+Subkey        -> (DOT Subidentifier) | (OPENSQUARE Subidentifier CLOSESQUARE );
+Subidentifier -> Identifier | SimpleField;
+SimpleField  -> OPENCURLY FieldName CLOSECURLY ;
+Conversion    ->  BANG CONVERSIONCHAR;
+FormatSpec -> COLON (FORMATCHARS | SimpleField)*;
+

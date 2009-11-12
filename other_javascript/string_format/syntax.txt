@@ -1,0 +1,19 @@
+format string = ( literal | field )*
+literal       = <any text>
+field         = "{"  [field_name] [conversion] [format spec] "}"
+field_name    = identifier [subkey]*
+identifier    = \w+
+subkey        = ("." subidentifier) | ("[" subidentifier "]")
+subidentifier = identifier | simple_field
+simple_field  = "{" field_name "}"
+conversion    =  "!" ("r"|"s"|"a")
+
+
+
+format_spec   = [[fill]align][sign][#][0][width][,][.precision][type]
+fill          =  <a character other than '}'>
+align         =  "<" | ">" | "=" | "^"
+sign          =  "+" | "-" | " "
+width         =  integer
+precision     =  integer
+type          =  "b" | "c" | "d" | "e" | "E" | "f" | "F" | "g" | "G" | "n" | "o" | "x" | "X" | "%"
