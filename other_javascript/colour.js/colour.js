@@ -54,33 +54,33 @@
  *
  * .lighten (amount)
  *      Where amount is a number between 0 and 1. Lightens the colour towards 
- *		white by the proportion given. Colour("black").lighten(0.5) is medium 
- *		grey. Colour("black").lighten(0.5).lighten(0.5) is 75% light grey. 
- *		.lighten(0) is a no-op, .lighten(1) turns any colour into white.
+ *      white by the proportion given. Colour("black").lighten(0.5) is medium 
+ *      grey. Colour("black").lighten(0.5).lighten(0.5) is 75% light grey. 
+ *      .lighten(0) is a no-op, .lighten(1) turns any colour into white.
  *
  * .darken (amount)
  *      Where amount is a number between 0 and 1. Darkens the colour towards 
- *		black by the proportion given. Colour("white").darken(0.5) is medium 
- *		grey. Colour("white").darken(0.5).darken(0.5) is 75% dark grey. 
- *		.darken(0) is a no-op, .darken(1) turns any colour into black.
+ *      black by the proportion given. Colour("white").darken(0.5) is medium 
+ *      grey. Colour("white").darken(0.5).darken(0.5) is 75% dark grey. 
+ *      .darken(0) is a no-op, .darken(1) turns any colour into black.
  *   
  * .getContrast ( [light, dark] )
- *   	Returns a new Colour object representing a tone which will be as legible
- *		as possible as a text/foreground colour when the original colour is
- *		used as a background. The defaults are #111 (on light backgrounds) and 
- *		#eee (on dark backgrounds.) If supplied, light and dark are strings or
- *		Colour objects which will be used instead (light should be a light 
- *		colour for use on dark backgrounds, dark should be a dark colour for use
- *		on light backgrounds.)
+ *      Returns a new Colour object representing a tone which will be as legible
+ *      as possible as a text/foreground colour when the original colour is
+ *      used as a background. The defaults are #111 (on light backgrounds) and 
+ *      #eee (on dark backgrounds.) If supplied, light and dark are strings or
+ *      Colour objects which will be used instead (light should be a light 
+ *      colour for use on dark backgrounds, dark should be a dark colour for use
+ *      on light backgrounds.)
  *   
  * .toString ()
- *   	Alias for .toHexString()
+ *      Alias for .toHexString()
  *   
  * .toHexString()
- *   	Returns a six or eight character hex colour code with leading #.
+ *      Returns a six or eight character hex colour code with leading #.
  *   
  * .toRGBString()
- *   	Returns a CSS colour code in the rgb() or rgba() format.
+ *      Returns a CSS colour code in the rgb() or rgba() format.
  *   
  * .toHSLString()
  *      Returns a CSS colour code in the hsl() or hsla() format.
@@ -89,10 +89,10 @@
  * Example
  * -------
  * Making the background of a <dt> proportionally darker than the parent <dl>:
- * 		var myDl = $("my-dl");
- * 		myDl.find("dt").css("background-colour", 
- *			Colour(myDl.css("background-colour")).darken(0.3).toString()
- *		);
+ *      var myDl = $("my-dl");
+ *      myDl.find("dt").css("background-colour", 
+ *          Colour(myDl.css("background-colour")).darken(0.3).toString()
+ *      );
  *
  * Setting the text colour in the dl automatically:
  *      myDl.css("color", 
@@ -275,10 +275,16 @@ cssHSLToHSL = Colour.cssHSLToHSL = function cssRGBToRGB (css) {
 
 
 rgbToHex = Colour.rgbToHex = function rgbToHex (rgb) {
-    return "#" + 
+    var alpha,
+        str = "#" + 
         ((rgb.r < 16)? "0":"") + rgb.r.toString(16) + 
         ((rgb.g < 16)? "0":"") + rgb.g.toString(16) + 
         ((rgb.b < 16)? "0":"") + rgb.b.toString(16);
+    if (rgb.a !== undefined) {
+        alpha = Math.floor(rgb.a*255);
+        str += ((alpha < 16 )? "0":"") + alpha.toString(16);
+    }
+    return str;
 };
 
 
