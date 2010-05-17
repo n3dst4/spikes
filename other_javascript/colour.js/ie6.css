@@ -1,5 +1,0 @@
-.page-body { height: expression(document.body.clientHeight - 40); bottom: auto;}
-.accordion { height: expression(document.body.clientHeight - 60); bottom: auto;}
-
-#palette { height: expression(document.body.clientHeight - 420); bottom: auto; }
-#palette-bag { height: expression($(this).parent().height() - 30); bottom: auto;  }
