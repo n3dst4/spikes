@@ -1,0 +1,30 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="mul" lang="mul" dir="ltr">
+<head>
+    <title>Cursor test</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <style type="text/css">
+    body { font-family: sans-serif; font-size: 9pt; }
+    div { background: #dddddd none; 
+        margin: 12pt; height: 10px; width: 400px; padding: 30px;}
+    </style>
+    <script type="text/javascript">
+    var cursors = ["url(denied.png) 8 8, url(denied.cur), wait", "default", 
+        "auto", "crosshair", "pointer", "move", "text", "wait", "help", 
+        "e-resize", "se-resize", "s-resize", "sw-resize", "w-resize", 
+        "nw-resize", "n-resize", "ne-resize", "all-scroll", "col-resize", 
+        "row-resize", "progress", "no-drop", "not-allowed"];
+    window.onload = function() {
+        for (c in cursors) {
+            var d = document.createElement("div");
+            d.textContent = d.innerText = d.style.cursor = cursors[c];
+            document.getElementsByTagName("body")[0].appendChild(d);
+        }
+    }
+    </script>
+</head>
+<body>
+    <h1>Cursor test page</h1>
+</body>
+</html>
